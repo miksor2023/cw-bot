@@ -88,6 +88,9 @@ public class TelegramBotUpdatesListener {
                     telegramBotService.printTable(telegramBot, chatId);
                     tableLoaded = false;
                 }
+                if(text != null && telegramBotService.textMaches(text)) {
+                    telegramBotService.putEntry(chatId, text);
+                }
 
             });
             return UpdatesListener.CONFIRMED_UPDATES_ALL;

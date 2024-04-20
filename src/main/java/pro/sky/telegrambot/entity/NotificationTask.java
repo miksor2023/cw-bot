@@ -16,15 +16,15 @@ public class NotificationTask {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long chatId;
-    private String text;
+    private String note;
     private LocalDateTime dateTime;
 
     public NotificationTask(){}
 
-    public NotificationTask(Long id, Long chatId, String text, LocalDateTime dateTime) {
+    public NotificationTask(Long id, Long chatId, String note, LocalDateTime dateTime) {
         this.id = id;
         this.chatId = chatId;
-        this.text = text;
+        this.note = note;
         this.dateTime = dateTime;
     }
 
@@ -41,12 +41,12 @@ public class NotificationTask {
         this.chatId = chatId;
     }
 
-    public String getText() {
-        return text;
+    public String getNote() {
+        return note;
     }
 
-    public void setText(String text) {
-        this.text = text;
+    public void setNote(String note) {
+        this.note = note;
     }
 
     public LocalDateTime getDateTime() {
@@ -62,21 +62,19 @@ public class NotificationTask {
         if (this == o) return true;
         if (!(o instanceof NotificationTask)) return false;
         NotificationTask that = (NotificationTask) o;
-        return getId() == that.getId() && getChatId() == that.getChatId() && Objects.equals(getText(), that.getText()) && Objects.equals(getDateTime(), that.getDateTime());
+        return getId() == that.getId() && getChatId() == that.getChatId() && Objects.equals(getNote(), that.getNote()) && Objects.equals(getDateTime(), that.getDateTime());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getChatId(), getText(), getDateTime());
+        return Objects.hash(getId(), getChatId(), getNote(), getDateTime());
     }
 
     @Override
     public String toString() {
-        return "NotificationTask{" +
-                "id=" + id +
+        return "id=" + id +
                 ", chatId=" + chatId +
-                ", text='" + text + '\'' +
-                ", dateTime=" + dateTime +
-                '}';
+                ", note='" + note +
+                ", dateTime=" + dateTime;
     }
 }

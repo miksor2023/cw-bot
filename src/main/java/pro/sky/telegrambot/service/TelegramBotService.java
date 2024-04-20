@@ -12,7 +12,9 @@ import pro.sky.telegrambot.repository.NotificationTaskRepository;
 
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Service
 public class TelegramBotService {
@@ -51,5 +53,28 @@ public class TelegramBotService {
     public void sayHallo(TelegramBot bot, long chatId) {
         logger.info("sayHallo was invoked");
         bot.execute(new SendMessage(chatId, "Maşallah! Maşallah!"));
+    }
+
+
+    public boolean textMaches (String text) {
+        logger.info("textMatcher was invoked");
+        return text.matches("([0-9\\.\\:\\s]{16})(\\s)([\\W+]+)");
+//        String regex = "([0-9\.\:\s]{16})(\s)([\W+]+)";
+//        Pattern pattern = Pattern.compile(regex);
+//        return pattern.matcher(text);
+    }
+
+    public void putEntry(long chatId, String text) {
+        logger.info("putEntity was invoked");
+        NotificationTask notificationTask = new NotificationTask();
+        String dateTimeSubstring = text.substring(0, 16);
+        String noteSubstring = text.substring(17);
+        LocalDateTime dateTime = LocalDateTime.parse(dateTimeSubstring, DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+
+        notificationTask.setChatId(chatId);
+        notificationTask.setNote(noteSubstring);
+        notificationTask.setDateTime(dateTime);
+
+        notificationTaskRepository.save(notificationTask);
     }
 }
