@@ -4,23 +4,37 @@ import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.request.SendMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import pro.sky.telegrambot.entity.NotificationTask;
 import pro.sky.telegrambot.listener.TelegramBotUpdatesListener;
+import pro.sky.telegrambot.repository.NotificationTaskRepository;
+
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+
 @Service
 public class ReminderService {
-    private final TelegramBot telegramBot;
-
-    public ReminderService(TelegramBot telegramBot) {
-        this.telegramBot = telegramBot;
+    @Autowired
+    private TelegramBot telegramBot;
+    @Autowired
+    private final NotificationTaskRepository notificationTaskRepository;
+    public ReminderService (NotificationTaskRepository notificationTaskRepository) {
+        this.notificationTaskRepository = notificationTaskRepository;
     }
-
     private Logger logger = LoggerFactory.getLogger(ReminderService.class);
 
-//    @Scheduled(cron = "${interval-in-cron}")
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(fixedDelay = 60000)
     public void sendReminder(){
         logger.info("sendReminder was invoked");
-        telegramBot.execute(new SendMessage(278265466L, "Merhaba abi! Nasılsın?"));
+        List<NotificationTask> taskList = notificationTaskRepository.findAll();
+        LocalDateTime currentTime = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
+        taskList.forEach(task -> {
+            if(task.getDateTime().equals(currentTime)) {
+                telegramBot.execute(new SendMessage(task.getChatId(), task.getNote()));
+            }
+        });
     }
 }

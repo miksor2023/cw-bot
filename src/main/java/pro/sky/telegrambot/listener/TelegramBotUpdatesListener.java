@@ -2,11 +2,9 @@ package pro.sky.telegrambot.listener;
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
-import com.pengrad.telegrambot.model.DeleteMyCommands;
-import com.pengrad.telegrambot.model.Update;
-import com.pengrad.telegrambot.request.GetUpdates;
+
 import com.pengrad.telegrambot.request.SendMessage;
-import com.pengrad.telegrambot.response.SendResponse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +20,14 @@ public class TelegramBotUpdatesListener {
 
     @Value("${telegram.bot.token}")
     private String token;
+    @Autowired
+    private TelegramBot telegramBot;
     private boolean startIsPressed = false;
     private boolean tableLoaded = false;
 
     private Logger logger = LoggerFactory.getLogger(TelegramBotUpdatesListener.class);
+
+
 
     private final TelegramBotService telegramBotService;
 
@@ -33,34 +35,8 @@ public class TelegramBotUpdatesListener {
         this.telegramBotService = telegramBotService;
     }
 
-    //    final TelegramBot telegramBot = new TelegramBot(token);
-
-//    final UpdatesListener updatesListener = new UpdatesListener() {
-//        @Override
-//        public int process(List<Update> updates) {
-//            updates.forEach(update -> {
-//                long chatId = update.message().chat().id();
-//                logger.info("Processing update: {}", chatId);
-//
-//                SendMessage message = new SendMessage(chatId, "Merhaba abi!");
-//                SendResponse response = telegramBot.execute(message);
-//
-//                String text = update.message().text();
-//                if(text != null && text.equals("/start")) {
-//                    telegramBot.execute(new SendMessage(chatId, "Merhaba abi! Ne haber?"));
-//                }
-//            });
-//            return UpdatesListener.CONFIRMED_UPDATES_ALL;
-//        }
-//    };
-
     @PostConstruct
     public void init() {
-        TelegramBot telegramBot = new TelegramBot(token);
-        telegramBot.execute(new DeleteMyCommands());
-        telegramBotService.clearTable();
-
-        logger.info("telegramBot created");
         telegramBot.setUpdatesListener(updates -> {
             updates.forEach(update -> {
                 long chatId = update.message().chat().id();
@@ -78,10 +54,12 @@ public class TelegramBotUpdatesListener {
                 }
                 if(text != null && text.equals("/load") && !tableLoaded) {
                     telegramBotService.loadTestTable();
+                    telegramBot.execute(new SendMessage(chatId, "Table loaded"));
                     tableLoaded = true;
                 }
                 if(text != null && text.equals("/clear") && tableLoaded) {
                     telegramBotService.clearTable();
+                    telegramBot.execute(new SendMessage(chatId, "Table cleared"));
                     tableLoaded = false;
                 }
                 if(text != null && text.equals("/print")) {
@@ -90,6 +68,7 @@ public class TelegramBotUpdatesListener {
                 }
                 if(text != null && telegramBotService.textMaches(text)) {
                     telegramBotService.putEntry(chatId, text);
+                    telegramBot.execute(new SendMessage(chatId, "Entry added"));
                 }
 
             });
@@ -97,22 +76,4 @@ public class TelegramBotUpdatesListener {
 
         });
     }
-
-//    @Override
-//    public int process(List<Update> updates) {
-//        updates.forEach(update -> {
-//            long chatId = update.message().chat().id();
-//            logger.info("Processing update: {}", chatId);
-//
-//            String text = update.message().text();
-//            if(text != null && text.equals("/start")) {
-//                telegramBot.execute(new SendMessage(chatId, "Merhaba abi! Ne haber?"));
-//            }
-//
-//
-//
-//        });
-//        return UpdatesListener.CONFIRMED_UPDATES_ALL;
-
-
 }

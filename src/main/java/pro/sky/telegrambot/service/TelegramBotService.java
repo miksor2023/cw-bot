@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pro.sky.telegrambot.entity.NotificationTask;
-import pro.sky.telegrambot.listener.TelegramBotUpdatesListener;
 import pro.sky.telegrambot.repository.NotificationTaskRepository;
 
 import java.time.LocalDateTime;
@@ -38,7 +37,7 @@ public class TelegramBotService {
     }
 
     public void clearTable(){
-        logger.info("claerTable was invoked");
+        logger.info("clearTable was invoked");
 
         notificationTaskRepository.deleteAll();
     }
@@ -59,9 +58,6 @@ public class TelegramBotService {
     public boolean textMaches (String text) {
         logger.info("textMatcher was invoked");
         return text.matches("([0-9\\.\\:\\s]{16})(\\s)([\\W+]+)");
-//        String regex = "([0-9\.\:\s]{16})(\s)([\W+]+)";
-//        Pattern pattern = Pattern.compile(regex);
-//        return pattern.matcher(text);
     }
 
     public void putEntry(long chatId, String text) {
@@ -77,4 +73,5 @@ public class TelegramBotService {
 
         notificationTaskRepository.save(notificationTask);
     }
+
 }
