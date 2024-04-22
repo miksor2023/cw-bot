@@ -28,7 +28,7 @@ public class TelegramBotService {
     }
     private Logger logger = LoggerFactory.getLogger(TelegramBotService.class);
 
-    public void loadTestTable(Long chatId){
+    public void loadTestTable(Long chatId){//метод использовался для отладки - решил пока не удалять
         logger.info("loadTestTable was invoked");
 
         notificationTaskRepository.save(new NotificationTask(null, 123L, "test1 привет", LocalDateTime.of(2020, Month.APRIL, 8, 12, 30)));
@@ -52,7 +52,7 @@ public class TelegramBotService {
 
     }
 
-    public void sayHallo(long chatId) {
+    public void sayHallo(long chatId) {//реализует ответ на приветствие, метод сделан ради фана
         logger.info("sayHallo was invoked");
         telegramBot.execute(new SendMessage(chatId, "Maşallah! Maşallah!"));
     }
@@ -63,7 +63,7 @@ public class TelegramBotService {
         return text.matches("([0-9\\.\\:\\s]{16})(\\s)([\\W+]+)");
     }
 
-    public void putEntry(long chatId, String text) {
+    public void putEntry(long chatId, String text) {//занести запись в БД. получает chatId и строку
         logger.info("putEntity was invoked");
         NotificationTask notificationTask = new NotificationTask();
         String dateTimeSubstring = text.substring(0, 16);
@@ -79,7 +79,9 @@ public class TelegramBotService {
         } else telegramBot.execute(new SendMessage(chatId, "The entered date must be later than the current one"));
     }
 
-    public void sendChosenTasks(List<Long> enteredIds) {
+    public void sendChosenTasks(List<Long> enteredIds) {//получает список Id записей, для которых затем осуществляется
+                                                        //отправка текстового сообщения, не дожидаясь момента из dateTime
+
         List<NotificationTask> entries = notificationTaskRepository.findAll();
         entries.forEach(entry -> {
             if(enteredIds.contains(entry.getId())){
@@ -92,8 +94,4 @@ public class TelegramBotService {
         return notificationTaskRepository.findIds();
     }
 
-    public void printChatIdList(Long chatId) {
-        List<Long> ids = notificationTaskRepository.findIds();
-        telegramBot.execute(new SendMessage(chatId, ids.toString()));
-    }
 }

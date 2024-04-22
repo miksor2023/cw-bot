@@ -24,9 +24,10 @@ public class TelegramBotUpdatesListener {
     private String token;
     @Autowired
     private TelegramBot telegramBot;
-    private boolean startIsPressed = false;
-    private boolean tableLoaded = false;
-    private boolean sendDialogStarted = false;
+
+    private boolean startIsPressed = false;//флаг - была получена команда /start, нужен для логики ожидания ответа
+    private boolean tableLoaded = false;//флаг - таблица загружена - для отладки использовал, решил пока не удалять
+    private boolean sendDialogStarted = false;//флаг - получена команда /send , нужен для логики ожидания ответа
 
     private Logger logger = LoggerFactory.getLogger(TelegramBotUpdatesListener.class);
 
