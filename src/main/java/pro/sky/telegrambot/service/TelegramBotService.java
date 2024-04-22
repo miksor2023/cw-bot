@@ -13,10 +13,12 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.regex.Pattern;
+
 
 @Service
 public class TelegramBotService {
+    @Autowired
+    private TelegramBot telegramBot;
     @Autowired
     private final NotificationTaskRepository notificationTaskRepository;
 
@@ -26,7 +28,7 @@ public class TelegramBotService {
     }
     private Logger logger = LoggerFactory.getLogger(TelegramBotService.class);
 
-    public void loadTestTable(){
+    public void loadTestTable(Long chatId){
         logger.info("loadTestTable was invoked");
 
         notificationTaskRepository.save(new NotificationTask(null, 123L, "test1 привет", LocalDateTime.of(2020, Month.APRIL, 8, 12, 30)));
@@ -34,24 +36,25 @@ public class TelegramBotService {
         notificationTaskRepository.save(new NotificationTask(null, 789L, "test3 привет", LocalDateTime.of(2020, Month.APRIL, 8, 14, 30)));
         notificationTaskRepository.save(new NotificationTask(null, 101112L, "test4 привет", LocalDateTime.of(2020, Month.APRIL, 8, 15, 30)));
         notificationTaskRepository.save(new NotificationTask(null, 131415L, "test5 привет", LocalDateTime.of(2020, Month.APRIL, 8, 16, 30)));
+        telegramBot.execute(new SendMessage(chatId, "Table loaded"));
     }
 
-    public void clearTable(){
+    public void clearTable(long chatId){
         logger.info("clearTable was invoked");
-
+        telegramBot.execute(new SendMessage(chatId, "Table cleared"));
         notificationTaskRepository.deleteAll();
     }
 
-    public void printTable(TelegramBot bot, long chatId) {
+    public void printTable(long chatId) {
         logger.info("printTable was invoked");
         List<NotificationTask> taskList = notificationTaskRepository.findAll();
-        bot.execute(new SendMessage(chatId, taskList.toString()));
+        telegramBot.execute(new SendMessage(chatId, taskList.toString()));
 
     }
 
-    public void sayHallo(TelegramBot bot, long chatId) {
+    public void sayHallo(long chatId) {
         logger.info("sayHallo was invoked");
-        bot.execute(new SendMessage(chatId, "Maşallah! Maşallah!"));
+        telegramBot.execute(new SendMessage(chatId, "Maşallah! Maşallah!"));
     }
 
 
@@ -67,11 +70,30 @@ public class TelegramBotService {
         String noteSubstring = text.substring(17);
         LocalDateTime dateTime = LocalDateTime.parse(dateTimeSubstring, DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
 
-        notificationTask.setChatId(chatId);
-        notificationTask.setNote(noteSubstring);
-        notificationTask.setDateTime(dateTime);
-
-        notificationTaskRepository.save(notificationTask);
+        if(dateTime.isAfter(LocalDateTime.now())) {
+            notificationTask.setChatId(chatId);
+            notificationTask.setNote(noteSubstring);
+            notificationTask.setDateTime(dateTime);
+            notificationTaskRepository.save(notificationTask);
+            telegramBot.execute(new SendMessage(chatId, "Entry added"));
+        } else telegramBot.execute(new SendMessage(chatId, "The entered date must be later than the current one"));
     }
 
+    public void sendChosenTasks(List<Long> enteredIds) {
+        List<NotificationTask> entries = notificationTaskRepository.findAll();
+        entries.forEach(entry -> {
+            if(enteredIds.contains(entry.getId())){
+                telegramBot.execute(new SendMessage(entry.getChatId(), entry.getNote()));
+            }
+        });
+    }
+
+    public List<Long> getIdList() {
+        return notificationTaskRepository.findIds();
+    }
+
+    public void printChatIdList(Long chatId) {
+        List<Long> ids = notificationTaskRepository.findIds();
+        telegramBot.execute(new SendMessage(chatId, ids.toString()));
+    }
 }

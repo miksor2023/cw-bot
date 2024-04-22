@@ -29,12 +29,10 @@ public class ReminderService {
     @Scheduled(fixedDelay = 60000)
     public void sendReminder(){
         logger.info("sendReminder was invoked");
-        List<NotificationTask> taskList = notificationTaskRepository.findAll();
         LocalDateTime currentTime = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
+        List<NotificationTask> taskList = notificationTaskRepository.findAllByDateTimeIs(currentTime);
         taskList.forEach(task -> {
-            if(task.getDateTime().equals(currentTime)) {
                 telegramBot.execute(new SendMessage(task.getChatId(), task.getNote()));
-            }
         });
     }
 }
