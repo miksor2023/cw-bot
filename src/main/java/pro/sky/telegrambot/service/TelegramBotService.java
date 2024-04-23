@@ -12,6 +12,7 @@ import pro.sky.telegrambot.repository.NotificationTaskRepository;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 
@@ -31,11 +32,11 @@ public class TelegramBotService {
     public void loadTestTable(Long chatId){//метод использовался для отладки - решил пока не удалять
         logger.info("loadTestTable was invoked");
 
-        notificationTaskRepository.save(new NotificationTask(null, 123L, "test1 привет", LocalDateTime.of(2020, Month.APRIL, 8, 12, 30)));
-        notificationTaskRepository.save(new NotificationTask(null, 456L, "test2 привет", LocalDateTime.of(2020, Month.APRIL, 8, 13, 30)));
-        notificationTaskRepository.save(new NotificationTask(null, 789L, "test3 привет", LocalDateTime.of(2020, Month.APRIL, 8, 14, 30)));
-        notificationTaskRepository.save(new NotificationTask(null, 101112L, "test4 привет", LocalDateTime.of(2020, Month.APRIL, 8, 15, 30)));
-        notificationTaskRepository.save(new NotificationTask(null, 131415L, "test5 привет", LocalDateTime.of(2020, Month.APRIL, 8, 16, 30)));
+        notificationTaskRepository.save(new NotificationTask(null, 123L, "test1 привет", "01.01.2022 20:00"));
+        notificationTaskRepository.save(new NotificationTask(null, 456L, "test2 привет", "01.01.2022 20:00"));
+        notificationTaskRepository.save(new NotificationTask(null, 789L, "test3 привет", "01.01.2022 20:00"));
+        notificationTaskRepository.save(new NotificationTask(null, 101112L, "test4 привет", "01.01.2022 20:00"));
+        notificationTaskRepository.save(new NotificationTask(null, 131415L, "test5 привет", "01.01.2022 20:00"));
         telegramBot.execute(new SendMessage(chatId, "Table loaded"));
     }
 
@@ -54,7 +55,6 @@ public class TelegramBotService {
 
     public void sayHallo(long chatId) {//реализует ответ на приветствие, метод сделан ради фана
         logger.info("sayHallo was invoked");
-        telegramBot.execute(new SendMessage(chatId, "Maşallah! Maşallah!"));
     }
 
 
@@ -68,15 +68,23 @@ public class TelegramBotService {
         NotificationTask notificationTask = new NotificationTask();
         String dateTimeSubstring = text.substring(0, 16);
         String noteSubstring = text.substring(17);
-        LocalDateTime dateTime = LocalDateTime.parse(dateTimeSubstring, DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
-
+        LocalDateTime dateTime = null;
+        try {
+            dateTime = LocalDateTime.parse(dateTimeSubstring, DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+        } catch (DateTimeParseException e) {
+            e.printStackTrace();
+        }
         if(dateTime.isAfter(LocalDateTime.now())) {
             notificationTask.setChatId(chatId);
             notificationTask.setNote(noteSubstring);
-            notificationTask.setDateTime(dateTime);
+            notificationTask.setDateTime(dateTime.toString());
             notificationTaskRepository.save(notificationTask);
             telegramBot.execute(new SendMessage(chatId, "Entry added"));
-        } else telegramBot.execute(new SendMessage(chatId, "The entered date must be later than the current one"));
+        } else if (dateTime != null) {
+            telegramBot.execute(new SendMessage(chatId, "The date must be later than the current one"));
+        } else {
+            telegramBot.execute(new SendMessage(chatId, "Parsing date error!\n Please chek date/time format"));
+        }
     }
 
     public void sendChosenTasks(List<Long> enteredIds) {//получает список Id записей, для которых затем осуществляется
