@@ -17,12 +17,11 @@ public class NotificationTask {
     private Long id;
     private Long chatId;
     private String note;
-    private String dateTime;
+    private LocalDateTime dateTime;
 
     public NotificationTask(){}
 
-    public NotificationTask(Long id, Long chatId, String note, String dateTime) {
-        this.id = id;
+    public NotificationTask(Long chatId, String note, LocalDateTime dateTime) {
         this.chatId = chatId;
         this.note = note;
         this.dateTime = dateTime;
@@ -49,11 +48,11 @@ public class NotificationTask {
         this.note = note;
     }
 
-    public String getDateTime() {
+    public LocalDateTime getDateTime() {
         return dateTime;
     }
 
-    public void setDateTime(String dateTime) {
+    public void setDateTime(LocalDateTime dateTime) {
         this.dateTime = dateTime;
     }
 

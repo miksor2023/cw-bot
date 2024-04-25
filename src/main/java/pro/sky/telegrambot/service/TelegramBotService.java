@@ -18,25 +18,30 @@ import java.util.List;
 
 @Service
 public class TelegramBotService {
-    @Autowired
+
     private TelegramBot telegramBot;
-    @Autowired
+
     private final NotificationTaskRepository notificationTaskRepository;
 
 
-    public TelegramBotService(NotificationTaskRepository notificationTaskRepository) {
+    public TelegramBotService(TelegramBot telegramBot, NotificationTaskRepository notificationTaskRepository) {
+        this.telegramBot = telegramBot;
         this.notificationTaskRepository = notificationTaskRepository;
     }
+
+    private static String REGEX = "([0-9\\.\\:\\s]{16})(\\s)([\\W+]+)";
+    private static String PATTERN = "dd.MM.yyyy HH:mm";
+
     private Logger logger = LoggerFactory.getLogger(TelegramBotService.class);
 
     public void loadTestTable(Long chatId){//метод использовался для отладки - решил пока не удалять
         logger.info("loadTestTable was invoked");
 
-        notificationTaskRepository.save(new NotificationTask(null, 123L, "test1 привет", "01.01.2022 20:00"));
-        notificationTaskRepository.save(new NotificationTask(null, 456L, "test2 привет", "01.01.2022 20:00"));
-        notificationTaskRepository.save(new NotificationTask(null, 789L, "test3 привет", "01.01.2022 20:00"));
-        notificationTaskRepository.save(new NotificationTask(null, 101112L, "test4 привет", "01.01.2022 20:00"));
-        notificationTaskRepository.save(new NotificationTask(null, 131415L, "test5 привет", "01.01.2022 20:00"));
+        notificationTaskRepository.save(new NotificationTask(123L, "test1 привет", "01.01.2022 20:00"));
+        notificationTaskRepository.save(new NotificationTask(456L, "test2 привет", "01.01.2022 20:00"));
+        notificationTaskRepository.save(new NotificationTask(789L, "test3 привет", "01.01.2022 20:00"));
+        notificationTaskRepository.save(new NotificationTask(101112L, "test4 привет", "01.01.2022 20:00"));
+        notificationTaskRepository.save(new NotificationTask(131415L, "test5 привет", "01.01.2022 20:00"));
         telegramBot.execute(new SendMessage(chatId, "Table loaded"));
     }
 
@@ -60,7 +65,7 @@ public class TelegramBotService {
 
     public boolean textMaches (String text) {
         logger.info("textMatcher was invoked");
-        return text.matches("([0-9\\.\\:\\s]{16})(\\s)([\\W+]+)");
+        return text.matches(REGEX);
     }
 
     public void putEntry(long chatId, String text) {//занести запись в БД. получает chatId и строку
@@ -70,14 +75,14 @@ public class TelegramBotService {
         String noteSubstring = text.substring(17);
         LocalDateTime dateTime = null;
         try {
-            dateTime = LocalDateTime.parse(dateTimeSubstring, DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+            dateTime = LocalDateTime.parse(dateTimeSubstring, DateTimeFormatter.ofPattern(PATTERN));
         } catch (DateTimeParseException e) {
             e.printStackTrace();
         }
         if(dateTime.isAfter(LocalDateTime.now())) {
             notificationTask.setChatId(chatId);
             notificationTask.setNote(noteSubstring);
-            notificationTask.setDateTime(dateTime.toString());
+            notificationTask.setDateTime(dateTime);
             notificationTaskRepository.save(notificationTask);
             telegramBot.execute(new SendMessage(chatId, "Entry added"));
         } else if (dateTime != null) {

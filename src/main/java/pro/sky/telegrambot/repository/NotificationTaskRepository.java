@@ -10,7 +10,7 @@ import java.util.List;
 
 @Repository
 public interface NotificationTaskRepository extends JpaRepository<NotificationTask, Long> {
-    List<NotificationTask> findAllByDateTimeIs(String currentTime);
+    List<NotificationTask> findAllByDateTimeIs(LocalDateTime currentTime);
 
     @Query(value = "SELECT id FROM notification_task", nativeQuery = true)
     List<Long> findIds();
