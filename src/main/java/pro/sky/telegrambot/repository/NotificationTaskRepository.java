@@ -8,7 +8,7 @@ import pro.sky.telegrambot.entity.NotificationTask;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Repository
+
 public interface NotificationTaskRepository extends JpaRepository<NotificationTask, Long> {
     List<NotificationTask> findAllByDateTimeIs(LocalDateTime currentTime);
 
