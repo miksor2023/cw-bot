@@ -37,18 +37,18 @@ public class TelegramBotService {
     public void loadTestTable(Long chatId){//метод использовался для отладки - решил пока не удалять
         logger.info("loadTestTable was invoked");
 
-        notificationTaskRepository.save(new NotificationTask(123L, "test1 привет", "01.01.2022 20:00"));
-        notificationTaskRepository.save(new NotificationTask(456L, "test2 привет", "01.01.2022 20:00"));
-        notificationTaskRepository.save(new NotificationTask(789L, "test3 привет", "01.01.2022 20:00"));
-        notificationTaskRepository.save(new NotificationTask(101112L, "test4 привет", "01.01.2022 20:00"));
-        notificationTaskRepository.save(new NotificationTask(131415L, "test5 привет", "01.01.2022 20:00"));
+        notificationTaskRepository.save(new NotificationTask(123L, "test1 привет", LocalDateTime.of(2020, Month.APRIL, 8, 12, 30)));
+        notificationTaskRepository.save(new NotificationTask(456L, "test2 привет", LocalDateTime.of(2020, Month.APRIL, 8, 13, 30)));
+        notificationTaskRepository.save(new NotificationTask(789L, "test3 привет", LocalDateTime.of(2020, Month.APRIL, 8, 14, 30)));
+        notificationTaskRepository.save(new NotificationTask(101112L, "test4 привет", LocalDateTime.of(2020, Month.APRIL, 8, 15, 30)));
+        notificationTaskRepository.save(new NotificationTask(131415L, "test5 привет", LocalDateTime.of(2020, Month.APRIL, 8, 16, 30)));
         telegramBot.execute(new SendMessage(chatId, "Table loaded"));
     }
 
     public void clearTable(long chatId){
         logger.info("clearTable was invoked");
-        telegramBot.execute(new SendMessage(chatId, "Table cleared"));
         notificationTaskRepository.deleteAll();
+        telegramBot.execute(new SendMessage(chatId, "Table cleared"));
     }
 
     public void printTable(long chatId) {
@@ -79,7 +79,7 @@ public class TelegramBotService {
         } catch (DateTimeParseException e) {
             e.printStackTrace();
         }
-        if(dateTime.isAfter(LocalDateTime.now())) {
+        if(dateTime != null && dateTime.isAfter(LocalDateTime.now())) {
             notificationTask.setChatId(chatId);
             notificationTask.setNote(noteSubstring);
             notificationTask.setDateTime(dateTime);
@@ -88,7 +88,7 @@ public class TelegramBotService {
         } else if (dateTime != null) {
             telegramBot.execute(new SendMessage(chatId, "The date must be later than the current one"));
         } else {
-            telegramBot.execute(new SendMessage(chatId, "Parsing date error!\n Please chek date/time format"));
+            telegramBot.execute(new SendMessage(chatId, "Parsing date error!\n Please check date/time format"));
         }
     }
 

@@ -1,10 +1,10 @@
 -- liquibase formatted sql
 
--- changeset michael:2
+-- changeset michael:3
 CREATE TABLE IF NOT EXISTS public.notification_task
 (
     id bigint PRIMARY KEY,
     chat_id bigint,
-    note character varying(255),
-    date_time character varying(255)
+    note CHARACTER VARYING(255),
+    date_time DATETIME
 )
